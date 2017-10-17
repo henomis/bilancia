@@ -3,11 +3,12 @@ package main
 import (
 	"net"
 	"fmt"
-
+	"encoding/json"
 	"sync"
 	"strconv"
 	"time"
 	"sort"
+	"os"
 )
 
 
@@ -227,13 +228,21 @@ func manageTunnel(m *balanceMap) {
 
 func main() {
 
+	file, _ := os.Open("conf.json")
+	decoder := json.NewDecoder(file)
+	configuration := Configuration{}
+	err := decoder.Decode(&configuration)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	fmt.Println(configuration)
 
 	// settings...
 	bm := [1000]balanceMap{}
 
 	bm[0].Init()
-	bm[0].AddServer(ServerName{"scatolotto.inim.it",80})
-	bm[0].AddServer(ServerName{"10.106.150.3",80})
+	bm[0].AddServer(ServerName{"127.0.0.1",80})
+	bm[0].AddServer(ServerName{"10.6.5.3",80})
 	bm[0].inport = 9000
 	bm[0].mode = ModeRoundRobin
 
