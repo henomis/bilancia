@@ -1,0 +1,6 @@
+Features I need:
+- config file
+- error handling
+- bandwidth balance algorithm
+- http reverse proxy
+- web gui
