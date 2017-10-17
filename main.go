@@ -8,7 +8,9 @@ import (
 	"strconv"
 	"time"
 	"sort"
+	"io/ioutil"
 	"os"
+	"strings"
 )
 
 
@@ -23,6 +25,7 @@ type ServerName struct {
 }
 
 type balanceMap struct {
+	name string
 	inport uint16
 	//connCount map[uint16] uint32
 	servers map[ServerName] uint32
@@ -210,14 +213,21 @@ func conn_job(external net.Conn, m *balanceMap) {
 func manageTunnel(m *balanceMap) {
 
 	ln, err := net.Listen("tcp", ":"+strconv.Itoa(int(m.inport)))
-	check(err, "[WS] Server is ready.")
+	if(err != nil ){
+		panic(err)
+	}
+	fmt.Printf("[%s] Server is ready!\n",m.name)
 
 
 
 	defer ln.Close()
 	for {
 		conn, err := ln.Accept()
-		check(err, "[WS] Accepted connection.")
+		if(err != nil ){
+			panic(err)
+		}
+		fmt.Printf("[%s] Accepted connection!\n",m.name)
+
 		go conn_job(conn,m)
 	}
 
@@ -226,25 +236,55 @@ func manageTunnel(m *balanceMap) {
 }
 
 
+type Configuration struct {
+	Name    string
+	Port int
+	Servers []string
+	Mode int
+}
+
 func main() {
 
-	file, _ := os.Open("conf.json")
-	decoder := json.NewDecoder(file)
-	configuration := Configuration{}
-	err := decoder.Decode(&configuration)
+	/* read conf */
+	file, err := ioutil.ReadFile("conf.json")
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	var configuration []Configuration
+	err = json.Unmarshal(file,&configuration)
+
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	fmt.Println(configuration)
+
 
 	// settings...
-	bm := [1000]balanceMap{}
+	bm := []balanceMap{}
 
-	bm[0].Init()
-	bm[0].AddServer(ServerName{"127.0.0.1",80})
-	bm[0].AddServer(ServerName{"10.6.5.3",80})
-	bm[0].inport = 9000
-	bm[0].mode = ModeRoundRobin
+
+	for c := range configuration {
+
+		bm = append(bm,balanceMap{})
+
+		bm[c].inport = uint16(configuration[c].Port)
+		bm[c].mode = configuration[c].Mode
+		bm[c].name = configuration[c].Name
+
+		for s := range configuration[c].Servers {
+
+			ss := strings.Split(configuration[c].Servers[s],":")
+			if(len(ss) == 2) {
+				bm[c].Init()
+				p,_ := strconv.Atoi(ss[1])
+				bm[c].AddServer(ServerName{ss[0],uint16(p)})
+			}
+
+		}
+
+
+	}
 
 
 

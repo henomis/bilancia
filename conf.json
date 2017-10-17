@@ -1,0 +1,13 @@
+[{
+	"name": "webserver",
+	"port": 8005,
+	"servers": ["server1:8001", "server2:8002"],
+	"mode": 0
+
+}, {
+	"name": "webserver2",
+	"port": 8006,
+	"servers": ["server1:8001", "server2:8002"],
+	"mode": 0
+
+}]
