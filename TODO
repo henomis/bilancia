@@ -1,5 +1,7 @@
 Features I need:
-- config file
+- beautify code
+- separate code in modules
+- config file: create a module
 - error handling
 - bandwidth balance algorithm
 - http reverse proxy
