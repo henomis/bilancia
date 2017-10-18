@@ -2,7 +2,13 @@ Features I need:
 - beautify code
 - separate code in modules
 - config file: create a module
+- command line parser
 - error handling
 - bandwidth balance algorithm
 - http reverse proxy
 - web gui
+- Makefile
+- pid file
+- daemon
+- init scripts
+- heartbeat
