@@ -35,10 +35,10 @@ func conn_job(external net.Conn, m *config.BalanceMap) {
 		return
 	}
 
-	m.AddConnection(p.Port)
+	m.AddConnection(p)
 
 	check(err, "Connected to "+p.Host+":"+strconv.Itoa(int(p.Port)))
-	defer m.DelConnection(p.Port)
+	defer m.DelConnection(p)
 	defer internal.Close()
 
 	// ext -> int
@@ -114,7 +114,6 @@ func main() {
 	if(err != nil) {
 		panic(err)
 	}
-
 
 
 	// lanch goroutine

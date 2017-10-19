@@ -72,11 +72,13 @@ func ReadConf(conf string) ([]BalanceMap, error) {
 		bm[c].Mode = configuration[c].Mode
 		bm[c].Name = configuration[c].Name
 
+		bm[c].Init()
+
 		for s := range configuration[c].Servers {
 
 			ss := strings.Split(configuration[c].Servers[s], ":")
 			if len(ss) == 2 {
-				bm[c].Init()
+
 				p, _ := strconv.Atoi(ss[1])
 				bm[c].AddServer(ServerName{ss[0], uint16(p)})
 			}
@@ -96,19 +98,34 @@ func (m *BalanceMap) Init() {
 
 }
 
-func (m *BalanceMap) AddConnection(port uint16) {
+
+func (m *BalanceMap) AddConnection(server ServerName) {
+	m.Mutex.Lock()
+	defer m.Mutex.Unlock()
+	m.Servers[server]++
+}
+
+func (m *BalanceMap) AddConnection2(port uint16) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 
 	for k := range m.Servers {
 		if k.Port == port {
 			m.Servers[k]++
+
 		}
 
 	}
 }
 
-func (m *BalanceMap) DelConnection(port uint16) {
+
+func (m *BalanceMap) DelConnection(server ServerName) {
+	m.Mutex.Lock()
+	defer m.Mutex.Unlock()
+	m.Servers[server]--
+}
+
+func (m *BalanceMap) DelConnection2(port uint16) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 
@@ -152,6 +169,8 @@ func (m *BalanceMap) SelectConnection() ServerName {
 
 	case ModeLeastConn:
 		var min uint32 = 0xffffffff
+
+		fmt.Println(m.Servers)
 		for k, v := range m.Servers {
 			if v < min {
 				sel = k
@@ -174,6 +193,8 @@ func (m *BalanceMap) SelectConnection() ServerName {
 			}
 		}
 
+		fmt.Println("last=", m.LastRound)
+
 		for k := range m.Servers {
 			if k.Port == uint16(port) {
 				sel = k
@@ -181,6 +202,8 @@ func (m *BalanceMap) SelectConnection() ServerName {
 		}
 
 	}
+
+	fmt.Println(sel)
 
 	return sel
 }
