@@ -22,13 +22,13 @@ type Configuration struct {
 }
 
 type BalanceMap struct {
+	sync.Mutex
 	Name   string
 	Inport uint16
 	//connCount map[uint16] uint32
 	Servers   map[ServerName]uint32
 	LastRound uint32
 	Mode      int
-	Mutex     sync.Mutex
 }
 
 
@@ -100,14 +100,14 @@ func (m *BalanceMap) Init() {
 
 
 func (m *BalanceMap) AddConnection(server ServerName) {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.Lock()
+	defer m.Unlock()
 	m.Servers[server]++
 }
 
 func (m *BalanceMap) AddConnection2(port uint16) {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.Lock()
+	defer m.Unlock()
 
 	for k := range m.Servers {
 		if k.Port == port {
@@ -120,14 +120,14 @@ func (m *BalanceMap) AddConnection2(port uint16) {
 
 
 func (m *BalanceMap) DelConnection(server ServerName) {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.Lock()
+	defer m.Unlock()
 	m.Servers[server]--
 }
 
 func (m *BalanceMap) DelConnection2(port uint16) {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.Lock()
+	defer m.Unlock()
 
 	for k := range m.Servers {
 		if k.Port == port {
@@ -140,8 +140,8 @@ func (m *BalanceMap) DelConnection2(port uint16) {
 }
 
 func (m *BalanceMap) CountConnections(port uint16) uint32 {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.Lock()
+	defer m.Unlock()
 
 	for k := range m.Servers {
 		if k.Port == port {
@@ -153,15 +153,15 @@ func (m *BalanceMap) CountConnections(port uint16) uint32 {
 }
 
 func (m *BalanceMap) AddServer(server ServerName) {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.Lock()
+	defer m.Unlock()
 
 	m.Servers[server] = 0
 }
 
 func (m *BalanceMap) SelectConnection() ServerName {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.Lock()
+	defer m.Unlock()
 
 	sel := ServerName{"", 0}
 
